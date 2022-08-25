@@ -92,3 +92,34 @@ Before setting up a VPN user account, you will need to determine the **username*
    # auth-nocache
    ```
 1. Download the generated `USERNAME.ovpn` file for the user.
+
+## Setting Up TOTP as a User
+
+Skip this if TOTP has already been set up for your VPN account.
+
+1. Download and install Google Authenticator (or equivalent) from your mobile device's store.
+1. From the Google Authenticator application (or equivalent), add a new time-based one-time password (TOTP) via the setup key.
+   1. As of the time of writing, this can be done in the Google Authenticator application via `+` > `Enter a setup key`:
+      ```
+      Account name: <up to you; can be anything>
+      Your key: <setup/secret key as generated above>
+      Type of key: Time based
+      ```
+1. You should see a 6 digit code that updates periodically if successful.
+
+## Setting Up VPN as a User
+
+1. Download the `USERNAME.ovpn` file to the device that you want to setup the VPN on.
+1. Download and install OpenVPN on the device.
+1. In OpenVPN, import `USERNAME.ovpn`:
+   ```
+   Profile Name: <up to you; can be anything>
+   Server Hostname (locked): <hostname of server; cannot be changed>
+   Username: <USERNAME>
+   Private Key Password: <PASSWORD>
+   ```
+   * Note that `Save Password` should not be enabled as the password is actually the TOTP.
+     `Save Private Key Password` is fine though.
+1. After importing the profile, attempting to connect to the VPN will bring up a prompt for the password.
+   This is actually referring to the TOTP.
+   * If you have not set up the TOTP yet, refer to the section above.
