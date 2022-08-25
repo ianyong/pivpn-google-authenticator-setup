@@ -38,3 +38,57 @@ I followed the instructions [here](https://github.com/pivpn/pivpn/issues/50#issu
    ```sh
    sudo service openvpn restart
    ```
+
+## Setting Up VPN User Accounts
+
+Before setting up a VPN user account, you will need to determine the **username** and **password** that will be used to connect.
+
+1. Create the directory to store the TOTP secret file for the user.
+   **Replace _USERNAME_ below with the username of the user.**
+   ```sh
+   sudo mkdir /var/ga/USERNAME
+   ```
+1. Generate a time-based one-time password (TOTP) for the user.
+   **Replace _USERNAME_ below with the username of the user.**
+   ```sh
+   sudo google-authenticator \
+       `# Specify a non-standard file location` \
+       --secret=/var/ga/USERNAME/.google_authenticator \
+       `# Set up time-based (TOTP) verification` \
+       --time-based \
+       `# Disallow reuse of previously used TOTP tokens` \
+       --disallow-reuse \
+       `# Limit logins to 3 every 30 seconds` \
+       --rate-limit=3 \
+       --rate-time=30 \
+       `# Set window of 3 permitted codes (one previous code, the current code, the next code)` \
+       --window-size=3 \
+       `# Don't confirm code; for interactive setups` \
+       --no-confirm \
+       `# Write file without first confirming with user` \
+       --force
+   ```
+   The rationale for using a non-standard (non-home) file location is given in the instructions above.
+1. Note down the secret key.
+   This will be used by the user to set up their TOTP in Google Authenticator.
+1. Create the VPN user account.
+   **Replace _USERNAME_ and _PASSWORD_ below with the username and password of the user respectively.**
+   ```sh
+   pivpn add --name USERNAME --password PASSWORD --days 1080
+   ```
+1. Add the following lines to `USERNAME.ovpn`:
+   ```
+   # Request username and password when connecting.
+   auth-user-pass
+   # Disable renegotiation of data channel key. If enabled, the
+   # VPN connection will be dropped when renegotiation takes
+   # place because the OTP that was valid when the VPN connection
+   # was established will no longer be valid.
+   reneg-sec 0
+   ```
+   Comment out the following line in `USERNAME.ovpn`:
+   ```
+   # Do not cache passwords in memory as the password is actually a TOTP.
+   # auth-nocache
+   ```
+1. Download the generated `USERNAME.ovpn` file for the user.
