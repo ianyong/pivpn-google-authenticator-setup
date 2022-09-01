@@ -34,6 +34,12 @@ I followed the instructions [here](https://github.com/pivpn/pivpn/issues/50#issu
    Additionally, we want the secret file to be readable only by `root` (400 permissions).
    Thus, we set the user to read the secret file to be `root`.
    More details can be found [here](https://github.com/google/google-authenticator-libpam#encrypted-home-directories).
+1. Comment out or remove the following lines in `/etc/pam.d/openvpn`:
+   ```conf
+   account	[success=1 new_authtok_reqd=done default=ignore]	pam_unix.so
+   account	requisite			pam_deny.so
+   ```
+   This is so that VPN accounts do not require a corresponding unix account.
 1. Reload the configuration changes.
    ```sh
    sudo service openvpn restart
